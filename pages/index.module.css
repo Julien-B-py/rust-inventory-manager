@@ -1,0 +1,36 @@
+.inventory {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.inventory a {
+    text-decoration: none;
+}
+
+
+.item {
+    border-radius: 0.75rem;
+    background-image: linear-gradient(45deg, rgba(44, 107, 212, 0.1) 5%, transparent 55%, transparent 75%, rgba(44, 107, 212, 0.1) 100%);
+    padding: 1rem;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+    display: flex;
+    flex-direction: column;
+}
+
+.item img {
+    filter: drop-shadow(0 10px 3px rgba(0, 0, 0, 0.25));
+    width: 50%;
+}
+
+.item__qty {
+    color: rgba(253, 251, 247, 0.64);
+}
+
+.item__name {
+    color: rgba(253, 251, 247, 0.8);
+}
+
+.item__price {
+    color: rgb(209, 110, 134);
+}
