@@ -3,36 +3,46 @@ import styles from './index.module.css'
 
 import { styled } from '@mui/material/styles';
 
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import LayersIcon from '@mui/icons-material/Layers';
+import RustItem from '@/components/RustItem';
 
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 
-import { useMemo, useState } from 'react'
+import AccountDetails from '@/components/AccountDetails';
 
-import moment from 'moment/moment'
-import localization from 'moment/locale/fr'
+import { useMemo, useState, useEffect } from 'react'
+
+import { saveInventoryData, loadInventoryData } from '@/utils/manageData';
+
+
+
+import Loader from '@/components/Loader';
 
 export default function Home({ steamId }) {
 
-  moment().locale("fr", localization)
+  // console.log(steamId)
+
+
+
 
   const [currentTab, setCurrentTab] = useState(0);
 
+  const [isFetching, setIsFetching] = useState(true);
+  const [newDataFetched, setNewDataFetched] = useState(false);
+
   const handleTabChange = (event, newValue) => {
-    console.log(newValue)
     setCurrentTab(newValue);
   };
 
   const [currentSteamId, setCurrentSteamId] = useState(steamId)
   const [rustInventory, setRustInventory] = useState();
 
-  const handleChange = e => setCurrentSteamId(e.target.value)
 
+  // TODO test react query
   const handleSubmit = async e => {
-    e.preventDefault();
+    e && e.preventDefault();
+    setIsFetching(true)
     const response = await fetch("/api/items",
       {
         body: JSON.stringify({ steamId: currentSteamId }),
@@ -43,17 +53,42 @@ export default function Home({ steamId }) {
       }
     );
 
+    console.log("FETCHING DATA")
+
     const data = await response.json()
     console.log(data)
 
     setRustInventory(data)
-
+    setIsFetching(false)
+    setNewDataFetched(true)
   }
 
+  // On page load we get data from localstorage
+  useEffect(() => {
+    console.log("LOAD")
+    const rustInventory = loadInventoryData()
 
+    if (!rustInventory) {
+      console.log("FETCH NEEDED")
+      handleSubmit()
+    } else {
+      setRustInventory(rustInventory);
+    }
+
+  }, [])
+
+
+  useEffect(() => {
+
+    if (newDataFetched) {
+      console.log("SAVE")
+      saveInventoryData(rustInventory)
+      setNewDataFetched(false)
+    }
+
+  }, [newDataFetched])
 
   const dataToShow = useMemo(() => currentTab === 0 ? rustInventory?.inventory : rustInventory?.stonking, [currentTab, rustInventory])
-  console.log(dataToShow)
 
   const StyledTab = styled((props) => <Tab  {...props} />)(
     ({ theme }) => ({
@@ -97,30 +132,12 @@ export default function Home({ steamId }) {
       </Head>
       <main>
 
-        {!rustInventory && <form>
-          <h1>Check your Steam inventory</h1>
-          <label htmlFor='steamId'>SteamID64</label>
-          <input type="text" id="steamId" name="steamId" required value={currentSteamId || ""} onChange={handleChange} />
-          <input type="submit" name="search" value="Search" onClick={handleSubmit} />
-        </form>}
+        {isFetching && <Loader />}
 
         <div className='container'>
           {rustInventory && (<>
-            <div className={styles.account}>
-              <div className={styles.profile}>
-                <img src={rustInventory.profil.avatarUrl} />
-                <div>
-                  <p>{rustInventory.profil.name}</p>
-                  <p>{rustInventory.profil.steamId}</p>
-                  <p>Dernière synchro : {moment(rustInventory.profil.lastUpdatedInventoryOn).fromNow()}</p>
-                </div>
-              </div>
-              <div>
-                <p>Nombre total de skins : {rustInventory.stats.items}</p>
-                <p>Valeur totale : {(rustInventory.stats.marketValue / 100).toFixed(2)}€</p>
-                <p>Fluctuations : <span>{(rustInventory.stats.marketMovementValue / 100).toFixed(2)}€</span> au cours des {moment().diff(moment(rustInventory.stats.marketMovementTime), 'hours')} dernières heures</p>
-              </div>
-            </div>
+
+            <AccountDetails profil={rustInventory.profil} stats={rustInventory.stats} handleSubmit={handleSubmit} />
 
             <Box sx={{ width: '100%' }}>
               <Box sx={{
@@ -133,78 +150,13 @@ export default function Home({ steamId }) {
                   <StyledTab label="ATH" />
                 </Tabs>
               </Box>
-              <TabPanel value={currentTab} index={0}>
+
+              <TabPanel value={currentTab} index={currentTab}>
                 <div className={styles.inventory}>
-
-                  {dataToShow?.map((item) => (
-                    <a key={item.id} href={item.buyNowUrl}>
-                      <div className={styles.item} style={{ backgroundImage: `linear-gradient(45deg, ${item.iconAccentColour}1A 5%, transparent 55%, transparent 75%, ${item.iconAccentColour}1A 100%)` }}>
-                        <img src={item.iconUrl} />
-                        <p className={styles.item__name} style={{ color: item.foregroundColour }} >{item.name}</p>
-
-                        {/* <p>{item.itemType}</p> */}
-                        <p className={styles.item__price}>{(item.buyNowPrice / 100).toFixed(2)}€</p>
-
-                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: "auto" }}>
-                          <div
-                            className={styles.item__qty}
-                            style={{
-                              display: "flex", alignItems: "center", gap: "0.25rem", filter: `drop-shadow(0 1px 0px ${item.iconAccentColour})`
-                            }}
-                          >
-                            <LayersIcon />{item.tradableamount}</div>
-                          {item.quantity - item.tradableamount > 0 &&
-                            <div
-                              className={styles.item__qty}
-                              style={{
-                                display: "flex", alignItems: "center", gap: "0.25rem", filter: `drop-shadow(0 1px 0px ${item.iconAccentColour})`
-                              }}
-                            >
-                              <AccessTimeIcon fontSize="small" />{item.quantity - item.tradableamount} en attente
-                            </div>}
-                        </div>
-
-                      </div>
-                    </a>
-                  ))}
+                  {dataToShow?.map((item) => (<RustItem key={item.id} item={item} />))}
                 </div>
               </TabPanel>
-              <TabPanel value={currentTab} index={1}>
-                <div className={styles.inventory}>
 
-                  {dataToShow?.map((item) => (
-                    <a key={item.id} href={item.buyNowUrl}>
-                      <div className={styles.item} style={{ backgroundImage: `linear-gradient(45deg, ${item.iconAccentColour}1A 5%, transparent 55%, transparent 75%, ${item.iconAccentColour}1A 100%)` }}>
-                        <img src={item.iconUrl} />
-                        <p className={styles.item__name} style={{ color: item.foregroundColour }} >{item.name}</p>
-
-                        {/* <p>{item.itemType}</p> */}
-                        <p className={styles.item__price}>{(item.buyNowPrice / 100).toFixed(2)}€</p>
-
-                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: "auto" }}>
-                          <div
-                            className={styles.item__qty}
-                            style={{
-                              display: "flex", alignItems: "center", gap: "0.25rem", filter: `drop-shadow(0 1px 0px ${item.iconAccentColour})`
-                            }}
-                          >
-                            <LayersIcon />{item.tradableamount}</div>
-                          {item.quantity - item.tradableamount > 0 &&
-                            <div
-                              className={styles.item__qty}
-                              style={{
-                                display: "flex", alignItems: "center", gap: "0.25rem", filter: `drop-shadow(0 1px 0px ${item.iconAccentColour})`
-                              }}
-                            >
-                              <AccessTimeIcon fontSize="small" />{item.quantity - item.tradableamount} en attente
-                            </div>}
-                        </div>
-
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </TabPanel>
             </Box>
 
           </>)}

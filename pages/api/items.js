@@ -45,5 +45,13 @@ export default async function handler(req, res) {
 
   const groupedArray = readExcelData();
 
+
+  // Merge
+  for (const item of rustInventoryData) {
+    const name = item.name.trim();
+    const inToSellArrayIndex = groupedArray.findIndex(x => x.name.trim() === name);
+    if (inToSellArrayIndex >= 0) item.stacks = groupedArray[inToSellArrayIndex].stacks
+  }
+
   res.json({ profil: profileSummaryData, inventory: rustInventoryData, stonking: stonkingItemsData, stats: inventoryTotalData, itemsToSell: groupedArray })
 }

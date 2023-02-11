@@ -10,6 +10,6 @@ html {
 }
 
 .container {
-  width: 1124px;
+  width: min(100%, 1124px);
   margin: auto;
 }

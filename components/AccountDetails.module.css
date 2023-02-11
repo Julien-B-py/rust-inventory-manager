@@ -1,0 +1,76 @@
+.profile, .stats {
+    display: flex;
+}
+
+.profile {
+    gap: 1rem;
+}
+
+.profile img {
+    display: none;
+    border-radius: 4px;
+}
+
+.account {
+    padding-top: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    padding-inline: 0.5rem;
+    font-size: 14px;
+}
+
+.profile__details {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile__details>div {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.5;
+}
+
+.stats {
+    flex-direction: column;
+}
+
+.stat__item {
+    line-height: 1.5;
+    display: flex;
+}
+
+.stat__changes {
+    flex-direction: column;
+}
+
+.stat__changes>div {
+    display: flex;
+}
+
+@media (min-width: 768px) {
+    .profile img {
+        display: block;
+    }
+
+    .stat__changes {
+        flex-direction: row;
+    }
+
+
+    .account {
+        gap: 1rem;
+    }
+
+}
+
+@media (min-width: 1024px) {
+    .account {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding-inline: 0;
+        font-size: 16px;
+        gap: 0;
+    }
+}

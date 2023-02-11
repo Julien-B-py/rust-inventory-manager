@@ -1,0 +1,58 @@
+.yes {
+    color: green;
+}
+
+.no {
+    color: red;
+}
+
+.item {
+    aspect-ratio: 1;
+    border-radius: 0.75rem;
+    background-image: linear-gradient(45deg, rgba(44, 107, 212, 0.1) 5%, transparent 55%, transparent 75%, rgba(44, 107, 212, 0.1) 100%);
+    padding: 1rem;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    gap: 0.5rem;
+}
+
+.item:hover::before {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0);
+    transition: all .3s;
+}
+
+.item img {
+    filter: drop-shadow(0 10px 3px rgba(0, 0, 0, 0.25));
+    width: 50%;
+}
+
+.item__qty {
+    color: rgba(253, 251, 247, 0.64);
+    font-size: 14px;
+}
+
+.item__name {
+    color: rgba(253, 251, 247, 0.8);
+}
+
+.item__price {
+    color: rgb(209, 110, 134);
+}
+
+.item__container {
+    text-decoration: none;
+}
